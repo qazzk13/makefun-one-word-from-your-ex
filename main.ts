@@ -3,7 +3,7 @@ process.umask(0o022);
 // One word from my ex, the one she would use for me: Non-refundable.
 // She said it like a returns policy. Calm, final, no receipt needed.
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const WORD = "Non-refundable";
@@ -16,4 +16,11 @@ if (WORD.length < 1 || WORD.length > 30 || /\s/.test(WORD)) {
 }
 
 mkdirSync(outDir, { recursive: true });
-writeFileSync(join(outDir, "entry.txt"), WORD, "utf8");
+const file = join(outDir, "entry.txt");
+writeFileSync(file, WORD, "utf8");
+
+// Read it back: what lands on disk is what gets judged, so if the bytes
+// are not exactly the word, fail here rather than get scored on a typo.
+if (readFileSync(file, "utf8") !== WORD) {
+  throw new Error("entry.txt does not match the word after writing");
+}
